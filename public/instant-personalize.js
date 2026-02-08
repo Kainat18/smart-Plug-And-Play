@@ -775,8 +775,23 @@ class ImagePreloader {
 // ============================================
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const GEMINI_API_KEY = "AIzaSyCALI5-rPMlu3SEfF2yTL0c3vBj1lYJWUI";
-
+  const GEMINI_API_KEY = (typeof CONFIG !== 'undefined') 
+    ? CONFIG.GEMINI_API_KEY 
+    : "";
+  
+   // Validate API key
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
+    console.warn(`
+      ⚠️ Gemini API key not configured!
+      
+      Setup instructions:
+      1. Copy config.example.js to config.js
+      2. Add your Gemini API key from https://makersuite.google.com
+      3. Refresh the page
+      
+      The system will fall back to keyword-based classification.
+    `);
+  }
  try {
         const engine = new PersonalizationEngine({ geminiKey: GEMINI_API_KEY });
         
