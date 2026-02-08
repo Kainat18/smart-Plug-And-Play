@@ -60,8 +60,8 @@ const Index = () => {
     border border-gray-200
     shadow-2xl rounded-xl
     p-5
-    text-gray-900"
-  
+    text-gray-900
+  "
       >
         <div className="font-bold text-gray-800 mb-4">
           🤖 Live Decision Process

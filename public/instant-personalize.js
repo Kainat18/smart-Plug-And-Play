@@ -775,130 +775,54 @@ class ImagePreloader {
 // ============================================
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const GEMINI_API_KEY = (typeof CONFIG !== 'undefined') 
+    ? CONFIG.GEMINI_API_KEY 
+    : "";
   
-  // ✅ MULTI-SOURCE API KEY DETECTION
-  // Works in both local development AND Vercel production
-  const GEMINI_API_KEY = 
-    // Source 1: Vercel environment variable (Vite injects this at build time)
-    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
-    
-    // Source 2: Local config.js (only exists in local dev)
-    (typeof CONFIG !== 'undefined' && CONFIG.GEMINI_API_KEY) ||
-    
-    // Source 3: Fallback to empty (system will use keyword rules)
-    "";
-  
-  // Log which source was used (helpful for debugging)
-  if (GEMINI_API_KEY) {
-    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
-      console.log("✅ Using Gemini API key from Vercel environment variable");
-    } else if (typeof CONFIG !== 'undefined') {
-      console.log("✅ Using Gemini API key from local config.js");
-    }
-  }
-  
-  // Validate API key
+   // Validate API key
   if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
     console.warn(`
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  GEMINI API KEY NOT CONFIGURED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-For LOCAL DEVELOPMENT:
-1. Copy config.example.js to config.js
-2. Add your Gemini API key from https://makersuite.google.com
-3. Refresh the page
-
-For VERCEL DEPLOYMENT:
-1. Go to: Vercel Dashboard → Your Project → Settings
-2. Click: Environment Variables
-3. Add: VITE_GEMINI_API_KEY = your-api-key-here
-4. Redeploy your project
-
-FALLBACK MODE:
-The system will use keyword-based classification instead.
-This works, but semantic AI features will be disabled.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      ⚠️ Gemini API key not configured!
+      
+      Setup instructions:
+      1. Copy config.example.js to config.js
+      2. Add your Gemini API key from https://makersuite.google.com
+      3. Refresh the page
+      
+      The system will fall back to keyword-based classification.
     `);
   }
-
-  try {
-    const engine = new PersonalizationEngine({ geminiKey: GEMINI_API_KEY });
-    
-    // Load assets first
-    await engine.loadAssets();
-    
-    // Create preloader with loaded templates
-    const preloader = new ImagePreloader(engine.templates);
-    
-    // Preload images and run engine in parallel
-    await Promise.all([
-      preloader.preload(),
-      engine.run()
-    ]);
-    
-    // Expose engine globally for debugging
-    window.personalizationEngine = engine;
-    
-    console.log("✅ InstantPersonalize initialized successfully");
-    
-  } catch (error) {
-    console.error("❌ Personalization Engine Error:", error);
-    
-    // Show user-friendly error message
-    const errorDiv = document.createElement("div");
-    errorDiv.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #f44336;
-      color: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      z-index: 10000;
-      font-family: system-ui, -apple-system, sans-serif;
-      max-width: 400px;
-    `;
-    errorDiv.innerHTML = `
-      <strong>⚠️ Personalization Error</strong><br>
-      <small>Check console for details. Showing default content.</small>
-    `;
-    document.body.appendChild(errorDiv);
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => errorDiv.remove(), 5000);
-  }
+ try {
+        const engine = new PersonalizationEngine({ geminiKey: GEMINI_API_KEY });
+        
+        // Load assets first
+        await engine.loadAssets();
+        
+        // Then create preloader with templates
+        const preloader = new ImagePreloader(engine.templates);
+        
+        // Preload and run in parallel
+        await Promise.all([
+            preloader.preload(),
+            engine.run()
+        ]);
+        
+        window.personalizationEngine = engine;
+    } catch (error) {
+        console.error('Personalization Engine Error:', error);
+    }
 });
 
-// ============================================
-// DEMO CONTROL FUNCTIONS
-// ============================================
-
-// Simulate different visitor intents for demo
+// Demo control functions
 window.simulateIntent = (intent) => {
   const url = new URL(window.location);
   url.searchParams.set("intent", intent);
   window.location = url.toString();
 };
 
-// Reset demo to default state
 window.resetDemo = () => {
   const url = new URL(window.location);
   url.searchParams.delete("intent");
   url.searchParams.delete("q");
   window.location = url.toString();
 };
-
-// Expose for debugging
-window.getDecision = () => {
-  if (window.__DECISION_OBJ__) {
-    console.log("📊 Current Decision:", window.__DECISION_OBJ__);
-    return window.__DECISION_OBJ__;
-  } else {
-    console.warn("⚠️ No decision object available yet");
-    return null;
-  }
-};
-
-console.log(" InstantPersonalize loaded. Use simulateIntent('gaming') to test.");
