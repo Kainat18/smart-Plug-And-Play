@@ -57,7 +57,7 @@ YouTube: /?utm_source=youtube
 ## 📊 Technical Architecture
 User Arrives ↓ Context Collection (15ms) ↓ Semantic Intent Classification via Gemini (180ms) ↓ Bayesian Signal Fusion (20ms) ↓ Thompson Sampling Template Selection (30ms) ↓ DOM Injection + Animation (50ms) ↓ Total: ~295ms (feels instant)
 
-
+![Architecture Diagram](./public/images/architecture-diag.png)
 ## 🎓 Technical Depth
 
 ### Machine Learning
