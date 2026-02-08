@@ -1,0 +1,58 @@
+{
+  "templates": {
+    "GAMING": {
+      "template_id": "hero_gaming_v1",
+      "hero_image": "images/gaming-a.jpg",
+      "headline": "Dominate Every Frame",
+      "subheadline": "240Hz refresh rate. 1ms response time. G-Sync compatible. Built for competitive gaming.",
+      "cta_text": "Shop Gaming Monitors",
+      "cta_link": "#gaming",
+      "badges": ["240Hz", "1ms Response", "G-Sync"],
+      "estimated_cvr": 0.31,
+      "successes": 31,
+      "failures": 69
+    },
+    "PROFESSIONAL": {
+      "template_id": "hero_professional_v1",
+      "hero_image": "images/professional-a.jpg",
+      "headline": "Work Without Compromise",
+      "subheadline": "Color-accurate displays. Eye-care certified. Productivity-first design for creators and developers.",
+      "cta_text": "Shop Professional Monitors",
+      "cta_link": "#professional",
+      "badges": ["100% sRGB", "Low Blue Light", "Ergonomic"],
+      "estimated_cvr": 0.28,
+      "successes": 28,
+      "failures": 72
+    },
+    "BUDGET": {
+      "template_id": "hero_budget_v1",
+      "hero_image": "images/budget-a.jpg",
+      "headline": "Premium Quality, Accessible Price",
+      "subheadline": "Starting at $199. Free shipping. 3-year warranty included. No compromise on quality.",
+      "cta_text": "View Best Deals",
+      "cta_link": "#deals",
+      "badges": ["From $199", "Free Shipping", "3-Year Warranty"],
+      "estimated_cvr": 0.25,
+      "failures": 75,
+      "successes": 25
+    },
+    "DEFAULT": {
+      "template_id": "hero_default_v1",
+      "hero_image": "images/hero-monitor.jpg",
+      "headline": "Premium Displays for Every Need",
+      "subheadline": "Discover our range of professional monitors designed for excellence in gaming, work, and entertainment.",
+      "cta_text": "Explore Collection",
+      "cta_link": "#all",
+      "badges": ["Free Shipping", "Warranty", "Expert Support"],
+      "estimated_cvr": 0.22,
+      "successes": 22,
+      "failures": 78
+    }
+  },
+  "priors": {
+    "GAMING": 0.30,
+    "PROFESSIONAL": 0.40,
+    "BUDGET": 0.20,
+    "DEFAULT": 0.10
+  }
+}

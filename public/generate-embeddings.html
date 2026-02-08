@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Intent Embeddings</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #output {
+            background: #1e1e1e;
+            color: #4EC9B0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 20px;
+            display: none;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .info {
+            color: #2196F3;
+        }
+        .warning {
+            color: #FF9800;
+        }
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 15px 0;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .api-key-info {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Generate Intent Embeddings</h1>
+        <p class="subtitle">This will create embeddings for Gaming, Professional, and Budget intents using Gemini AI.</p>
+        
+        <div class="api-key-info">
+            🔑 Using Model: <strong>models/embedding-001</strong><br>
+            📊 Total API Calls: <strong>15</strong> (3 intents × 5 exemplars each)<br>
+            ⏱️ Estimated Time: <strong>~10 seconds</strong>
+        </div>
+        
+        <button id="generateBtn" onclick="generate()">
+            🚀 Generate Embeddings
+        </button>
+        
+        <div class="progress" id="progress">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+        
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        // ============================================
+        // 🔑 PUT YOUR GEMINI API KEY HERE
+        // ============================================
+        const GEMINI_API_KEY = 'AIzaSyCALI5-rPMlu3SEfF2yTL0c3vBj1lYJWUI';
+        
+        // Intent exemplars for training
+        const intentExemplars = {
+            GAMING: [
+                "gaming monitor with high refresh rate",
+                "best monitor for competitive esports",
+                "low latency display for FPS games",
+                "144hz monitor for gaming",
+                "RGB gaming setup monitor"
+            ],
+            PROFESSIONAL: [
+                "color accurate monitor for photo editing",
+                "monitor for graphic design work",
+                "professional display for video production",
+                "monitor for software development",
+                "4K monitor for productivity"
+            ],
+            BUDGET: [
+                "cheap monitor under $200",
+                "affordable display for students",
+                "best value monitor deals",
+                "budget-friendly monitor",
+                "discount monitor sale"
+            ]
+        };
+
+        async function getEmbedding(text, apiKey) {
+            // Correct endpoint for embedding-001
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: "models/embedding-001",
+                    content: {
+                        parts: [{
+                            text: text
+                        }]
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`API Error (${response.status}): ${errorText}`);
+            }
+
+            const data = await response.json();
+            
+            // Check if embedding exists in response
+            if (!data.embedding || !data.embedding.values) {
+                throw new Error(`Unexpected API response: ${JSON.stringify(data)}`);
+            }
+            
+            return data.embedding.values;
+        }
+
+        function averageVectors(vectors) {
+            if (vectors.length === 0) {
+                throw new Error('Cannot average empty vector array');
+            }
+            
+            const dim = vectors[0].length;
+            const avg = new Array(dim).fill(0);
+            
+            for (const vec of vectors) {
+                for (let i = 0; i < dim; i++) {
+                    avg[i] += vec[i];
+                }
+            }
+            
+            for (let i = 0; i < dim; i++) {
+                avg[i] /= vectors.length;
+            }
+            
+            return avg;
+        }
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            output.style.display = 'block';
+            output.innerHTML += `<span class="${type}">${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearLog() {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            output.style.display = 'block';
+        }
+
+        function updateProgress(current, total) {
+            const progress = document.getElementById('progress');
+            const progressBar = document.getElementById('progressBar');
+            progress.style.display = 'block';
+            
+            const percentage = Math.round((current / total) * 100);
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+        }
+
+        async function generate() {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+                alert('⚠️ Please add your Gemini API key!\n\nFind this line in the code:\nconst GEMINI_API_KEY = \'YOUR_GEMINI_API_KEY_HERE\';\n\nReplace with your actual key.');
+                return;
+            }
+            
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating...';
+            
+            clearLog();
+            log('🚀 Starting embedding generation...\n', 'info');
+            log('Using model: models/embedding-001\n', 'info');
+            
+            const totalCalls = Object.values(intentExemplars).reduce((sum, arr) => sum + arr.length, 0);
+            let currentCall = 0;
+            
+            try {
+                const intentEmbeddings = {};
+
+                for (const [intent, exemplars] of Object.entries(intentExemplars)) {
+                    log(`\n📝 Processing ${intent}...`, 'info');
+                    
+                    const embeddings = [];
+                    
+                    for (let i = 0; i < exemplars.length; i++) {
+                        const exemplar = exemplars[i];
+                        log(`  ${i + 1}/${exemplars.length}: "${exemplar}"`, 'info');
+                        
+                        try {
+                            const embedding = await getEmbedding(exemplar, GEMINI_API_KEY);
+                            embeddings.push(embedding);
+                            
+                            currentCall++;
+                            updateProgress(currentCall, totalCalls);
+                            
+                            log(`    ✓ Success! (${embedding.length} dimensions)`, 'success');
+                            
+                            // Wait to avoid rate limits
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            
+                        } catch (error) {
+                            log(`    ✗ Error: ${error.message}`, 'error');
+                            throw error;
+                        }
+                    }
+                    
+                    // Average all exemplar embeddings for this intent
+                    intentEmbeddings[intent] = averageVectors(embeddings);
+                    log(`  ✅ ${intent} embedding created (averaged ${embeddings.length} vectors)\n`, 'success');
+                }
+
+                // Create downloadable JSON
+                const jsonStr = JSON.stringify(intentEmbeddings, null, 2);
+                
+                log('\n' + '═'.repeat(50), 'info');
+                log('✅ ALL EMBEDDINGS GENERATED SUCCESSFULLY!', 'success');
+                log('═'.repeat(50) + '\n', 'info');
+                
+                // Show summary
+                log('📊 Summary:', 'info');
+                Object.entries(intentEmbeddings).forEach(([intent, embedding]) => {
+                    log(`  • ${intent}: ${embedding.length} dimensions`, 'info');
+                });
+                
+                // Download file
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'intent-embeddings.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                log('\n💾 File downloaded as "intent-embeddings.json"', 'success');
+                log('\n📁 Next Steps:', 'warning');
+                log('  1. Save the downloaded file to your project folder', 'warning');
+                log('  2. Make sure it\'s in the same directory as index.html', 'warning');
+                log('  3. You\'re ready to run your demo!', 'warning');
+                
+                btn.textContent = '✓ Done! Generate Again?';
+                btn.disabled = false;
+                
+            } catch (error) {
+                log(`\n${'═'.repeat(50)}`, 'error');
+                log('❌ ERROR OCCURRED', 'error');
+                log('═'.repeat(50) + '\n', 'error');
+                log(`Error: ${error.message}\n`, 'error');
+                
+                log('🔍 Troubleshooting:', 'warning');
+                log('  1. Check your API key is correct', 'warning');
+                log('  2. Verify you have API quota remaining', 'warning');
+                log('  3. Check your internet connection', 'warning');
+                log('  4. Wait a minute and try again (rate limit)', 'warning');
+                
+                console.error('Full error:', error);
+                
+                btn.textContent = '🔄 Try Again';
+                btn.disabled = false;
+                
+                updateProgress(0, 100);
+            }
+        }
+    </script>
+</body>
+</html>
