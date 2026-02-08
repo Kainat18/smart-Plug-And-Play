@@ -63,9 +63,20 @@ const Index = () => {
     text-gray-900
   "
       >
-        <div className="font-bold text-gray-800 mb-4">
-          🤖 Live Decision Process
-        </div>
+        <div className="flex items-center justify-between mb-4">
+  <div className="font-semibold text-gray-900 flex items-center gap-2">
+    🤖 Live Decision Process
+  </div>
+
+  <button
+    onClick={() => {
+      document.getElementById("decision-panel")?.classList.add("hidden");
+    }}
+    className="text-gray-400 hover:text-gray-700 transition"
+  >
+    ✕
+  </button>
+</div>
 
         <div className="space-y-4">
           <div id="step-context" className="flex items-center bg-gray-200 p-2 rounded">
